@@ -1,0 +1,22 @@
+Fully supporting all configuration fields and avoiding the use of magic numbers:
+
+In our implementation, we consistently utilize the configuration variables to accommodate all configurations required by the course staff. For instance, instead of employing specific values like "penaltyFreezeTime," we utilize "env.config.penaltyFreezeMillis."
+These configuration variables are used within methods such as:
+TurnTimeoutSeconds: Dealer::placeCardsOnTable, Dealer::sleepUntilWokenOrTimeout, Dealer::updateTimerDisplay
+PointFreezeSeconds: Player::point
+PenaltyFreezeSeconds: Player::penalty
+TableDelaySeconds: Table::placeCard, Table::removeCard
+To ensure code versatility, we conducted several tests examining various options for each configuration variable. Notably, none of our classes utilize magic numbers.
+Terminating all threads gracefully and in reverse order:
+We manage thread termination gracefully in the main function. We implement a volatile field and method called XbuttonPressed. When set to true, the dealer finalizes its action. The main thread awaits the dealer thread, which in turn waits for player threads. Threads are terminated using ThreadLoger.LogStop method, followed by ui.dispose to close the game window. Testing for correctness involved verifying the successful termination of threads.
+
+Handling the config.turnTimeoutMillis:
+
+To accommodate the various options for turnTimeoutMillis, we have partitioned relevant methods accordingly. Utilizing env.config.turnTimeoutMillis renders our code dynamic, adapting based on the turnTimeoutMillis value.
+Methods incorporating this configuration include: Dealer::placeCardsOnTable, Dealer::sleepUntilWokenOrTimeout, Dealer::updateTimerDisplay, Dealer::checkSet.
+Testing for the three options of config.turnTimeoutMillis involved conducting multiple tests to ensure proper functionality for turnTimeoutMillis = 0, turnTimeoutMillis > 0, and turnTimeoutMillis < 0.
+Ensuring threads remain dormant until necessary tasks arise, and adhering to thread creation limitations:
+
+Our code consists of a dealer thread and individual threads for each player. Upon placing cards on the table, the dealer thread enters a sleep state until a player selects three cards. Subsequently, the dealer thread wakes up to validate the chosen cards and proceeds with the game mechanics. Each player thread remains inactive until the player selects their third card. Semaphore usage mitigates thread conflicts.
+Methods involved in thread management include: Dealer::sleepUntilWokenOrTimeout, Player::keyPressed.
+Testing thread functionality involved incorporating print statements within the code to monitor dealer and player thread activities, ensuring they operate as expected.
